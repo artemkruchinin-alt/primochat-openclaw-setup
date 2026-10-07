@@ -282,6 +282,7 @@ def install(root, config, original):
     print("Ключ Kimi останется на этом компьютере. Сообщения нового чата будут обрабатываться Kimi.")
     print("Matrix-подключение этого профиля будет заменено; история чатов сохранится.")
     print('Локальный SearXNG установится автоматически. Поисковые запросы будут передаваться внешним поисковым системам.')
+    print('Будут установлены/включены официальные плагины Matrix (доступ к чату) и SearXNG (веб-поиск).')
     if input("Продолжить? [да/нет]: ").strip().lower() not in ("да", "yes"):
         return
     owner = input("Ваш аккаунт primoChat (@имя:primochat.ru): ").strip()
@@ -341,18 +342,18 @@ def install(root, config, original):
         matrix = next((p for p in entries if p.get("id") == "matrix"), None)
         if matrix is None:
             print("Устанавливаем официальный Matrix-плагин версии 2026.8.1…")
-            command(["openclaw", "plugins", "install", "npm:@openclaw/matrix@2026.8.1"], timeout=240)
+            command(["openclaw", "plugins", "install", "npm:@openclaw/matrix@2026.8.1", "--accept-capabilities"], timeout=240)
         elif matrix.get("status") == "error":
             raise SetupError("Matrix-плагин сообщает об ошибке. Настройка остановлена.")
         if matrix is None or matrix.get("enabled") is not True:
-            command(["openclaw", "plugins", "enable", "matrix"])
+            command(["openclaw", "plugins", "enable", "matrix", "--accept-capabilities"])
         search_plugin=next((p for p in entries if p.get('id')=='searxng'),None)
         if search_plugin is None:
-            command(['openclaw','plugins','install','npm:@openclaw/searxng-plugin@2026.8.1'],timeout=240)
+            command(['openclaw','plugins','install','npm:@openclaw/searxng-plugin@2026.8.1','--accept-capabilities'],timeout=240)
         elif search_plugin.get('status')=='error':
             raise SetupError('Плагин поиска сообщает об ошибке.')
         if search_plugin is None or search_plugin.get('enabled') is not True:
-            command(['openclaw','plugins','enable','searxng'])
+            command(['openclaw','plugins','enable','searxng','--accept-capabilities'])
         replacement = configure(json.loads(config.read_bytes()), enrollment, secret_file, search_base)
         write_private(config, replacement)
         command(["openclaw", "config", "validate"])
